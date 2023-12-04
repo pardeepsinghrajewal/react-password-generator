@@ -1,11 +1,55 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
+import { useState } from 'react'
+import { useCallback } from 'react'
+import { useEffect } from 'react'
+import { useRef } from 'react'
+
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [password, setPassword] = useState('');
+  const [length, setLength] = useState(8);
+  const [numberAllowed, setNumberAllowed] = useState(false);
+  const [SpecialCharAllowed, setSpecialCharAllowed] = useState(false)
+
+  const passRef = useRef(null);
+
+  const passwordGenerator = useCallback(() => 
+  {
+
+    let pass = '';
+    let text = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if(numberAllowed)
+    {
+      text += '1234567890';
+    }
+    if(SpecialCharAllowed)
+    { 
+      text += '!@#$%^&*()_+';
+    }
+
+    for (let i = 0; i < length; i++) 
+    {
+      let index = Math.floor((Math.random() * text.length) + 1);  
+      pass += text[index]
+    }
+    setPassword(pass);
+  }, [length,numberAllowed,SpecialCharAllowed]);
+
+
+  useEffect(()=>{
+    passwordGenerator();
+  },[length,numberAllowed,SpecialCharAllowed])
+
+  const copyPassToClipBoard = () => {
+    navigator.clipboard.writeText(password);
+    passRef.current.select();
+
+  }
+
   return (
     <>
       <Head>
@@ -14,99 +58,22 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.js</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
+      <main >
+        <div className={styles.passwordGenerator}>
+          <input type='text' value={password} readOnly ref={passRef}/>
+          <button onClick={copyPassToClipBoard}>Copy</button><br/>
+          length({length}) <input type='range' min="4" max="16" 
+          onChange={(e)=>{setLength(e.target.value)}}/><br/>
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
+          Use Number <input type="checkbox" checked={numberAllowed} onChange={()=> 
+          {
+            setNumberAllowed((prev)=> !prev)
+          }} /> <br/>
 
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
+          use Special Char <input type="checkbox" checked={SpecialCharAllowed} onChange={()=> 
+            {
+              setSpecialCharAllowed((prev)=> !prev)
+            }}/>
         </div>
       </main>
     </>
